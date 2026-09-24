@@ -1,0 +1,128 @@
+openapi: 3.0.3
+info:
+  title: Consulta Precios API
+  description: Returns the price list and final price that apply to a brand product at a given date.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+tags:
+  - name: Prices
+paths:
+  /prices:
+    get:
+      tags:
+        - Prices
+      operationId: getApplicablePrice
+      summary: Get the price that applies to a brand product at a given date
+      description: When several price lists cover the application date, the one with the highest priority is returned.
+      parameters:
+        - name: applicationDate
+          in: query
+          required: true
+          description: Local date and time, ISO-8601 without offset (yyyy-MM-ddTHH:mm:ss).
+          schema:
+            type: string
+            format: date-time
+          example: "2020-06-14T10:00:00"
+        - name: productId
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+          example: 35455
+        - name: brandId
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+          example: 1
+      responses:
+        "200":
+          description: Applicable price found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PriceResponse"
+        "400":
+          description: Missing or invalid parameters.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: Brand not found, or no price applies to the product at that date.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "500":
+          description: Unexpected error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+components:
+  schemas:
+    PriceResponse:
+      type: object
+      required:
+        - productId
+        - brandId
+        - priceList
+        - startDate
+        - endDate
+        - price
+        - currency
+      properties:
+        productId:
+          type: integer
+          format: int64
+          example: 35455
+        brandId:
+          type: integer
+          format: int64
+          example: 1
+        priceList:
+          type: integer
+          format: int64
+          example: 1
+        startDate:
+          type: string
+          format: date-time
+          example: "2020-06-14T00:00:00"
+        endDate:
+          type: string
+          format: date-time
+          example: "2020-12-31T23:59:59"
+        price:
+          type: number
+          example: 35.50
+        currency:
+          type: string
+          pattern: "^[A-Z]{3}$"
+          example: EUR
+    Problem:
+      type: object
+      description: Error body as defined by RFC 9457.
+      properties:
+        type:
+          type: string
+          format: uri
+          example: about:blank
+        title:
+          type: string
+          example: Not Found
+        status:
+          type: integer
+          example: 404
+        detail:
+          type: string
+          example: No price applies to product 35455 of brand 1 at 2020-06-13T10:00
+        instance:
+          type: string
+          format: uri
+          example: /prices
