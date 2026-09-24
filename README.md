@@ -4,8 +4,10 @@ Servicio REST en Spring Boot que devuelve la tarifa y el precio final que aplica
 
 ## Requisitos
 
-- Java 17, o solo Docker (ver [Con Docker](#con-docker))
-- No hace falta instalar Maven: el proyecto incluye Maven Wrapper (`mvnw` / `mvnw.cmd`).
+Hay dos formas de ejecutar la aplicación y cada una tiene sus propios requisitos:
+
+- **Con Maven**: Java 17. No hace falta instalar Maven, porque el proyecto incluye Maven Wrapper (`mvnw` / `mvnw.cmd`).
+- **Con Docker**: solo Docker. La compilación se hace dentro del contenedor, así que no se necesita ni Java ni Maven (ver [Con Docker](#con-docker)).
 
 ## Ejecución
 
