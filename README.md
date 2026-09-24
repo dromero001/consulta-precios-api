@@ -71,6 +71,15 @@ Limitaciones de la restricción de solape, a tener en cuenta fuera de este ejerc
 - Solo se evalúa sobre la fila que se inserta o actualiza. Es suficiente para los datos cargados al arrancar, pero no garantiza el invariante
   con escrituras concurrentes.
 
+### Selección de la tarifa: patrón Strategy
+
+La regla "si varias tarifas cubren la fecha, se aplica la de mayor prioridad" vive en el dominio, no en la SQL:
+el repositorio devuelve todas las tarifas candidatas y `PriceSelectionStrategy` elige cuál aplica.
+Hoy hay una única implementación, `HighestPriorityPriceSelectionStrategy`. La interfaz es el punto de extensión para
+otras reglas de selección (por ejemplo, desempatar por la fecha de inicio más reciente o aplicar promociones)
+sin tocar la infraestructura. Esa estrategia no contempla empates porque la base de datos los impide
+(ver `CK_PRICES_NO_OVERLAP_WITH_SAME_PRIORITY`).
+
 ### Fechas y zona horaria
 
 Las fechas no llevan zona horaria: se modelan como `LocalDateTime` y se comparan con fecha y hora completas
