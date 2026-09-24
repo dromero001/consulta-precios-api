@@ -4,7 +4,7 @@ Servicio REST en Spring Boot que devuelve la tarifa y el precio final que aplica
 
 ## Requisitos
 
-- Java 17
+- Java 17, o solo Docker (ver [Con Docker](#con-docker))
 - No hace falta instalar Maven: el proyecto incluye Maven Wrapper (`mvnw` / `mvnw.cmd`).
 
 ## Ejecución
@@ -24,6 +24,15 @@ También se puede empaquetar y arrancar el jar:
 ```bash
 ./mvnw package
 java -jar target/consulta-precios-api-0.0.1-SNAPSHOT.jar
+```
+
+### Con Docker
+
+Solo hace falta Docker: la compilación se hace dentro del contenedor.
+
+```bash
+docker build -t consulta-precios-api .
+docker run --rm -p 8080:8080 consulta-precios-api
 ```
 
 La aplicación arranca en `http://localhost:8080`.
@@ -92,7 +101,7 @@ El informe HTML queda en `target/karate-reports/karate-summary.html`.
 
 ## Stack
 
-- Java 17
+- Java 17, o solo Docker (ver [Con Docker](#con-docker))
 - Spring Boot 4.1.1
 - OpenAPI Generator 7.25.0
 - springdoc-openapi 3.1.1 (SwaggerUI)
@@ -159,6 +168,12 @@ lo que devolvería el precio de otra hora. `StrictLocalDateTimeFormatConfigurati
 que las rechaza con un 400.
 
 Los mensajes de validación se fijan en inglés (`spring.web.locale: en`) para que no dependan del idioma de la máquina.
+
+### Docker
+
+`Dockerfile` multi-stage: una etapa con Maven y JDK 17 compila y empaqueta, y la imagen final solo lleva el JRE 17 (Alpine) y el jar,
+y se ejecuta con un usuario sin privilegios. No hay `docker-compose`: es un único servicio y H2 va en memoria dentro del propio proceso,
+así que un compose no aportaría nada.
 
 ### Base de datos
 
