@@ -21,6 +21,7 @@
         <openapi-generator.version>7.25.0</openapi-generator.version>
         <archunit.version>1.5.0</archunit.version>
         <karate.version>1.5.2</karate.version>
+        <springdoc.version>3.1.1</springdoc.version>
     </properties>
 
     <dependencies>
@@ -35,6 +36,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc.version}</version>
         </dependency>
         <dependency>
             <groupId>com.h2database</groupId>
@@ -99,7 +105,7 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <inputSpec>${project.basedir}/src/main/resources/openapi/prices-api.yaml</inputSpec>
+                            <inputSpec>${project.basedir}/src/main/resources/static/openapi/prices-api.yaml</inputSpec>
                             <generatorName>spring</generatorName>
                             <apiPackage>com.ecommerce.prices.webapp.controller.api</apiPackage>
                             <modelPackage>com.ecommerce.prices.webapp.controller.dto</modelPackage>

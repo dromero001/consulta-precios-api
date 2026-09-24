@@ -16,8 +16,8 @@ class PricesE2EIT {
     private int port;
 
     @Test
-    void shouldAnswerEveryScenarioOfThePricesFeature() {
-        Results results = Runner.path("classpath:e2e/prices.feature")
+    void shouldPassEveryEndToEndScenario() {
+        Results results = Runner.path("classpath:e2e")
                 .systemProperty("baseUrl", "http://localhost:" + port)
                 .outputCucumberJson(false)
                 .parallel(1);

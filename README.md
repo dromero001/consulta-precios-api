@@ -28,6 +28,9 @@ java -jar target/consulta-precios-api-0.0.1-SNAPSHOT.jar
 
 La aplicación arranca en `http://localhost:8080`.
 
+- SwaggerUI: http://localhost:8080/swagger-ui.html
+- Contrato OpenAPI: http://localhost:8080/openapi/prices-api.yaml
+
 ## Uso
 
 ```bash
@@ -92,6 +95,9 @@ El informe HTML queda en `target/karate-reports/karate-summary.html`.
 - Java 17
 - Spring Boot 4.1.1
 - OpenAPI Generator 7.25.0
+- springdoc-openapi 3.1.1 (SwaggerUI)
+- H2 (en memoria), JDBC con `NamedParameterJdbcTemplate`
+- JUnit 5, AssertJ, Mockito, ArchUnit 1.5.0, Karate 1.5.2
 
 ## Decisiones de diseño
 
@@ -123,11 +129,14 @@ com.ecommerce.prices
 
 ### API first
 
-El contrato es la fuente de verdad: [`src/main/resources/openapi/prices-api.yaml`](src/main/resources/openapi/prices-api.yaml).
+El contrato es la fuente de verdad: [`src/main/resources/static/openapi/prices-api.yaml`](src/main/resources/static/openapi/prices-api.yaml).
 En cada build, `openapi-generator-maven-plugin` genera a partir de él la interfaz `PricesApi` y el modelo `PriceResponse`
 (`interfaceOnly`). El controlador implementa esa interfaz, de modo que si el código se desvía del contrato, no compila.
 
 El esquema `Problem` del contrato se mapea a `org.springframework.http.ProblemDetail` (RFC 9457) en lugar de generar una clase propia.
+
+SwaggerUI (springdoc) no genera la documentación a partir del código: muestra el mismo YAML del contrato, publicado como recurso estático
+(`springdoc.swagger-ui.url: /openapi/prices-api.yaml`). Así la documentación y el contrato son un único fichero.
 
 ### Gestión de errores
 

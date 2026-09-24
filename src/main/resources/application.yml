@@ -4,3 +4,7 @@ spring:
   web:
     locale: en
     locale-resolver: fixed
+
+springdoc:
+  swagger-ui:
+    url: /openapi/prices-api.yaml
