@@ -1,3 +1,6 @@
 spring:
   application:
     name: consulta-precios-api
+  web:
+    locale: en
+    locale-resolver: fixed

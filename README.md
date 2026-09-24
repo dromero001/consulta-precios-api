@@ -73,6 +73,28 @@ En cada build, `openapi-generator-maven-plugin` genera a partir de él la interf
 
 El esquema `Problem` del contrato se mapea a `org.springframework.http.ProblemDetail` (RFC 9457) en lugar de generar una clase propia.
 
+### Gestión de errores
+
+Los errores se devuelven como `application/problem+json` con el formato `ProblemDetail` (RFC 9457), desde un único
+`GlobalExceptionHandler` (`@RestControllerAdvice`). El dominio lanza sus propias excepciones (`BrandNotFoundException`,
+`PriceNotFoundException`), que no dependen de Spring. La traducción a HTTP se hace solo en la capa web.
+
+| Situación | Estado | `detail` de ejemplo |
+|---|---|---|
+| La cadena no existe | 404 | `Brand 99 not found` |
+| Ninguna tarifa aplica en esa fecha | 404 | `No price applies to product 35455 of brand 1 at 2020-06-13T10:00` |
+| Falta un parámetro | 400 | `Required parameter 'brandId' is not present.` |
+| Identificador no numérico | 400 | `Failed to convert 'productId' with value: 'abc'` |
+| Identificador menor que 1 | 400 | `brandId: must be greater than or equal to 1` |
+| Fecha mal formada o con zona horaria | 400 | `Failed to convert 'applicationDate' with value: '2020-06-14T16:00:00+02:00'` |
+| Cualquier otro error | 500 | `Unexpected error` (se registra en el log, sin exponer detalles al cliente) |
+
+Por defecto, el `@DateTimeFormat(iso = DATE_TIME)` que genera OpenAPI Generator acepta fechas con offset (`+02:00`) y lo descarta sin avisar,
+lo que devolvería el precio de otra hora. `StrictLocalDateTimeFormatConfiguration` registra un parser `ISO_LOCAL_DATE_TIME` estricto
+que las rechaza con un 400.
+
+Los mensajes de validación se fijan en inglés (`spring.web.locale: en`) para que no dependan del idioma de la máquina.
+
 ### Base de datos
 
 H2 en memoria, inicializada al arrancar con [`schema.sql`](src/main/resources/schema.sql) y [`data.sql`](src/main/resources/data.sql).
