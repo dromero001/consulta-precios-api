@@ -57,6 +57,36 @@ y la columna `CURR` forma parte de la tarifa. Añadir un campo a la respuesta no
 ./mvnw verify
 ```
 
+`verify` ejecuta los tests unitarios y de slice con Surefire (`*Test`) y los e2e con Failsafe (`*IT`).
+Solo los unitarios: `./mvnw test`.
+
+| Nivel | Clase | Qué prueba |
+|---|---|---|
+| Unitario | `HighestPriorityPriceSelectionStrategyTest` | Regla de selección por mayor prioridad |
+| Unitario | `GetApplicablePriceUseCaseTest` | Orquestación del caso de uso y sus errores (Mockito) |
+| Slice web | `PriceControllerTest` | Contrato HTTP, validación de parámetros y `ProblemDetail` (`@WebMvcTest` + `MockMvcTester`) |
+| Slice JDBC | `JdbcPriceRepositoryTest`, `JdbcBrandRepositoryTest` | SQL contra H2, incluidos los extremos de los rangos (`@JdbcTest`) |
+| Slice JDBC | `DatabaseSchemaTest` | Datos iniciales y restricciones de `PRICES` |
+| Arquitectura | `ArchitectureTest` | Reglas de dependencias de la arquitectura hexagonal (ArchUnit) |
+| E2E | `PricesE2EIT` + [`prices.feature`](src/test/resources/e2e/prices.feature) | Los 5 casos del enunciado, más 404 y 400, contra la aplicación levantada |
+
+### Tests e2e con Karate
+
+`PricesE2EIT` arranca la aplicación completa con `@SpringBootTest(webEnvironment = RANDOM_PORT)`: Tomcat en un puerto real y H2 cargada
+con `schema.sql`/`data.sql`. Después ejecuta el `.feature` de Karate, que hace peticiones HTTP reales al endpoint. Los 5 casos del enunciado
+son un `Scenario Outline` con una fila por caso:
+
+| Caso | Petición (producto 35455, cadena 1) | Tarifa | Precio |
+|---|---|---|---|
+| Test 1 | 2020-06-14 10:00 | 1 | 35.50 |
+| Test 2 | 2020-06-14 16:00 | 2 | 25.45 |
+| Test 3 | 2020-06-14 21:00 | 1 | 35.50 |
+| Test 4 | 2020-06-15 10:00 | 3 | 30.50 |
+| Test 5 | 2020-06-16 21:00 | 4 | 38.95 |
+
+Karate usa la sintaxis Gherkin de Cucumber, pero trae los pasos HTTP y las aserciones JSON ya hechos, así que no hay que escribir step definitions.
+El informe HTML queda en `target/karate-reports/karate-summary.html`.
+
 ## Stack
 
 - Java 17
