@@ -28,6 +28,29 @@ java -jar target/consulta-precios-api-0.0.1-SNAPSHOT.jar
 
 La aplicación arranca en `http://localhost:8080`.
 
+## Uso
+
+```bash
+curl "http://localhost:8080/prices?applicationDate=2020-06-14T16:00:00&productId=35455&brandId=1"
+```
+
+```json
+{
+  "productId": 35455,
+  "brandId": 1,
+  "priceList": 2,
+  "startDate": "2020-06-14T15:00:00",
+  "endDate": "2020-06-14T18:30:00",
+  "price": 25.45,
+  "currency": "EUR"
+}
+```
+
+`applicationDate` es una fecha y hora local en formato ISO-8601 sin zona horaria (`yyyy-MM-ddTHH:mm:ss`).
+
+La respuesta incluye `currency` aunque el enunciado no la enumera entre los datos de salida: un precio sin moneda es ambiguo
+y la columna `CURR` forma parte de la tarifa. Añadir un campo a la respuesta no rompe a los clientes existentes.
+
 ## Tests
 
 ```bash
