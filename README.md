@@ -81,6 +81,7 @@ Solo los unitarios: `./mvnw test`.
 | Slice JDBC | `DatabaseSchemaTest` | Datos iniciales y restricciones de `PRICES` |
 | Arquitectura | `ArchitectureTest` | Reglas de dependencias de la arquitectura hexagonal (ArchUnit) |
 | E2E | `PricesE2EIT` + [`prices.feature`](src/test/resources/e2e/prices.feature) | Los 5 casos del enunciado, más 404 y 400, contra la aplicación levantada |
+| E2E | `PricesE2EIT` + [`api-docs.feature`](src/test/resources/e2e/api-docs.feature) | Publicación del contrato y SwaggerUI |
 
 ### Tests e2e con Karate
 
@@ -101,7 +102,7 @@ El informe HTML queda en `target/karate-reports/karate-summary.html`.
 
 ## Stack
 
-- Java 17, o solo Docker (ver [Con Docker](#con-docker))
+- Java 17
 - Spring Boot 4.1.1
 - OpenAPI Generator 7.25.0
 - springdoc-openapi 3.1.1 (SwaggerUI)
@@ -147,34 +148,6 @@ El esquema `Problem` del contrato se mapea a `org.springframework.http.ProblemDe
 SwaggerUI (springdoc) no genera la documentación a partir del código: muestra el mismo YAML del contrato, publicado como recurso estático
 (`springdoc.swagger-ui.url: /openapi/prices-api.yaml`). Así la documentación y el contrato son un único fichero.
 
-### Gestión de errores
-
-Los errores se devuelven como `application/problem+json` con el formato `ProblemDetail` (RFC 9457), desde un único
-`GlobalExceptionHandler` (`@RestControllerAdvice`). El dominio lanza sus propias excepciones (`BrandNotFoundException`,
-`PriceNotFoundException`), que no dependen de Spring. La traducción a HTTP se hace solo en la capa web.
-
-| Situación | Estado | `detail` de ejemplo |
-|---|---|---|
-| La cadena no existe | 404 | `Brand 99 not found` |
-| Ninguna tarifa aplica en esa fecha | 404 | `No price applies to product 35455 of brand 1 at 2020-06-13T10:00` |
-| Falta un parámetro | 400 | `Required parameter 'brandId' is not present.` |
-| Identificador no numérico | 400 | `Failed to convert 'productId' with value: 'abc'` |
-| Identificador menor que 1 | 400 | `brandId: must be greater than or equal to 1` |
-| Fecha mal formada o con zona horaria | 400 | `Failed to convert 'applicationDate' with value: '2020-06-14T16:00:00+02:00'` |
-| Cualquier otro error | 500 | `Unexpected error` (se registra en el log, sin exponer detalles al cliente) |
-
-Por defecto, el `@DateTimeFormat(iso = DATE_TIME)` que genera OpenAPI Generator acepta fechas con offset (`+02:00`) y lo descarta sin avisar,
-lo que devolvería el precio de otra hora. `StrictLocalDateTimeFormatConfiguration` registra un parser `ISO_LOCAL_DATE_TIME` estricto
-que las rechaza con un 400.
-
-Los mensajes de validación se fijan en inglés (`spring.web.locale: en`) para que no dependan del idioma de la máquina.
-
-### Docker
-
-`Dockerfile` multi-stage: una etapa con Maven y JDK 17 compila y empaqueta, y la imagen final solo lleva el JRE 17 (Alpine) y el jar,
-y se ejecuta con un usuario sin privilegios. No hay `docker-compose`: es un único servicio y H2 va en memoria dentro del propio proceso,
-así que un compose no aportaría nada.
-
 ### Base de datos
 
 H2 en memoria, inicializada al arrancar con [`schema.sql`](src/main/resources/schema.sql) y [`data.sql`](src/main/resources/data.sql).
@@ -212,3 +185,31 @@ Las fechas no llevan zona horaria: se modelan como `LocalDateTime` y se comparan
 
 Se asume que **no es un sistema multipaís**: todas las fechas están en la hora local de la cadena. Si lo fuera,
 habría que añadir a `PRICES` una columna con la zona horaria (o el país/mercado) de la tarifa y resolver la fecha de aplicación contra ella.
+
+### Gestión de errores
+
+Los errores se devuelven como `application/problem+json` con el formato `ProblemDetail` (RFC 9457), desde un único
+`GlobalExceptionHandler` (`@RestControllerAdvice`). El dominio lanza sus propias excepciones (`BrandNotFoundException`,
+`PriceNotFoundException`), que no dependen de Spring. La traducción a HTTP se hace solo en la capa web.
+
+| Situación | Estado | `detail` de ejemplo |
+|---|---|---|
+| La cadena no existe | 404 | `Brand 99 not found` |
+| Ninguna tarifa aplica en esa fecha | 404 | `No price applies to product 35455 of brand 1 at 2020-06-13T10:00` |
+| Falta un parámetro | 400 | `Required parameter 'brandId' is not present.` |
+| Identificador no numérico | 400 | `Failed to convert 'productId' with value: 'abc'` |
+| Identificador menor que 1 | 400 | `brandId: must be greater than or equal to 1` |
+| Fecha mal formada o con zona horaria | 400 | `Failed to convert 'applicationDate' with value: '2020-06-14T16:00:00+02:00'` |
+| Cualquier otro error | 500 | `Unexpected error` (se registra en el log, sin exponer detalles al cliente) |
+
+Por defecto, el `@DateTimeFormat(iso = DATE_TIME)` que genera OpenAPI Generator acepta fechas con offset (`+02:00`) y lo descarta sin avisar,
+lo que devolvería el precio de otra hora. `StrictLocalDateTimeFormatConfiguration` registra un parser `ISO_LOCAL_DATE_TIME` estricto
+que las rechaza con un 400.
+
+Los mensajes de validación se fijan en inglés (`spring.web.locale: en`) para que no dependan del idioma de la máquina.
+
+### Docker
+
+`Dockerfile` multi-stage: una etapa con Maven y JDK 17 compila y empaqueta, y la imagen final solo lleva el JRE 17 (Alpine) y el jar,
+y se ejecuta con un usuario sin privilegios. No hay `docker-compose`: es un único servicio y H2 va en memoria dentro del propio proceso,
+así que un compose no aportaría nada.
