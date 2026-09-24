@@ -65,6 +65,32 @@ y la columna `CURR` forma parte de la tarifa. Añadir un campo a la respuesta no
 
 ## Decisiones de diseño
 
+### Arquitectura hexagonal
+
+Un único módulo Maven con los paquetes separados por puertos y adaptadores:
+
+```
+com.ecommerce.prices
+├── domain
+│   ├── model        Price, PriceQuery (Java puro)
+│   ├── port         PriceRepository, BrandRepository (puertos de salida)
+│   ├── exception    BrandNotFoundException, PriceNotFoundException
+│   ├── strategy     PriceSelectionStrategy + HighestPriorityPriceSelectionStrategy
+│   └── usecase      GetApplicablePriceUseCase
+├── adapter
+│   └── database     JdbcPriceRepository, JdbcBrandRepository (NamedParameterJdbcTemplate)
+└── webapp
+    ├── controller     PriceController (implementa PricesApi generada), GlobalExceptionHandler
+    └── configuration  StrictLocalDateTimeFormatConfiguration
+```
+
+- Las dependencias apuntan siempre hacia el dominio. `ArchitectureTest` (ArchUnit) hace fallar la build si `domain` depende de `adapter` o `webapp`,
+  si `domain.model`, `domain.port` o `domain.exception` dependen de Spring o Jakarta, o si los adaptadores dependen entre sí.
+- Se ha preferido un único módulo a un multimódulo Maven para mantener el código mínimo: ArchUnit da la misma garantía con menos ficheros.
+- Persistencia con JDBC (`NamedParameterJdbcTemplate`) y SQL explícita, sin JPA: para una consulta de solo lectura, un ORM no aporta nada.
+- Las implementaciones de los puertos llevan como prefijo su tecnología (`JdbcPriceRepository`). Así, un adaptador nuevo (otra base de datos,
+  una caché, un cliente REST) se añade sin tocar el dominio.
+
 ### API first
 
 El contrato es la fuente de verdad: [`src/main/resources/openapi/prices-api.yaml`](src/main/resources/openapi/prices-api.yaml).
