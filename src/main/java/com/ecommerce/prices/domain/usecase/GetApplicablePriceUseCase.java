@@ -8,9 +8,7 @@ import com.ecommerce.prices.domain.model.PriceQuery;
 import com.ecommerce.prices.domain.port.BrandRepository;
 import com.ecommerce.prices.domain.port.PriceRepository;
 import com.ecommerce.prices.domain.strategy.PriceSelectionStrategy;
-import org.springframework.stereotype.Service;
 
-@Service
 public class GetApplicablePriceUseCase {
 
     private final BrandRepository brandRepository;

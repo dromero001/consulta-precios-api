@@ -128,6 +128,7 @@ com.ecommerce.prices
 │   ├── exception    NotFoundException (Brand/Price), AmbiguousPriceException
 │   ├── strategy     PriceSelectionStrategy + HighestPriorityPriceSelectionStrategy
 │   └── usecase      GetApplicablePriceUseCase
+├── configuration    DomainConfiguration (@Configuration que crea los beans del dominio)
 ├── adapter
 │   └── database     JdbcPriceRepository, JdbcBrandRepository (NamedParameterJdbcTemplate)
 └── webapp
@@ -135,8 +136,11 @@ com.ecommerce.prices
                        InvalidApplicationDateException
 ```
 
-- Las dependencias apuntan siempre hacia el dominio. `ArchitectureTest` (ArchUnit) hace fallar la build si `domain` depende de `adapter` o `webapp`,
-  si `domain.model`, `domain.port` o `domain.exception` dependen de Spring o Jakarta, o si los adaptadores dependen entre sí.
+- Las dependencias apuntan siempre hacia el dominio. `ArchitectureTest` (ArchUnit) hace fallar la build si `domain` depende de `adapter`,
+  `webapp` o `configuration`, si cualquier clase de `domain` depende de Spring o Jakarta, o si los adaptadores dependen entre sí.
+- El dominio es Java puro: el caso de uso y la estrategia no llevan anotaciones de Spring. `DomainConfiguration` los crea como beans
+  fuera del dominio, de modo que el framework conoce al dominio pero no al revés. Los adaptadores sí usan anotaciones
+  (`@Repository`, `@RestController`), porque son infraestructura.
 - Se ha preferido un único módulo a un multimódulo Maven para mantener el código mínimo: ArchUnit da la misma garantía con menos ficheros.
 - `BrandId` y `ProductId` son value objects: el compilador impide intercambiar la cadena y el producto, que de otro modo serían dos `long`.
 - Persistencia con JDBC (`NamedParameterJdbcTemplate`) y SQL explícita, sin JPA: para una consulta de solo lectura, un ORM no aporta nada.

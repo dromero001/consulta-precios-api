@@ -4,9 +4,7 @@ import com.ecommerce.prices.domain.exception.AmbiguousPriceException;
 import com.ecommerce.prices.domain.model.Price;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.stereotype.Component;
 
-@Component
 public class HighestPriorityPriceSelectionStrategy implements PriceSelectionStrategy {
 
     @Override

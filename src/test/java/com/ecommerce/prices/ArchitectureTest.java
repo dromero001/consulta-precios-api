@@ -13,11 +13,11 @@ class ArchitectureTest {
     @ArchTest
     static final ArchRule domainShouldNotDependOnAdapters = noClasses()
             .that().resideInAPackage("..domain..")
-            .should().dependOnClassesThat().resideInAnyPackage("..adapter..", "..webapp..");
+            .should().dependOnClassesThat().resideInAnyPackage("..adapter..", "..webapp..", "..configuration..");
 
     @ArchTest
-    static final ArchRule domainModelPortsAndExceptionsShouldNotDependOnFrameworks = noClasses()
-            .that().resideInAnyPackage("..domain.model..", "..domain.port..", "..domain.exception..")
+    static final ArchRule domainShouldNotDependOnFrameworks = noClasses()
+            .that().resideInAPackage("..domain..")
             .should().dependOnClassesThat().resideInAnyPackage("org.springframework..", "jakarta..");
 
     @ArchTest
