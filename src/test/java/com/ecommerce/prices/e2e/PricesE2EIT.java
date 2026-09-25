@@ -22,6 +22,7 @@ class PricesE2EIT {
                 .outputCucumberJson(false)
                 .parallel(1);
 
+        assertThat(results.getScenariosTotal()).as("executed scenarios").isPositive();
         assertThat(results.getFailCount()).as(results.getErrorMessages()).isZero();
     }
 }
