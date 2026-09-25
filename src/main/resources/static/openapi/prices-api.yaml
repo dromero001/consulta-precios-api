@@ -3,8 +3,6 @@ info:
   title: Consulta Precios API
   description: Returns the price list and final price that apply to a brand product at a given date.
   version: 1.0.0
-servers:
-  - url: http://localhost:8080
 tags:
   - name: Prices
 paths:
