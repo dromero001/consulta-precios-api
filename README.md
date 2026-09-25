@@ -41,6 +41,7 @@ La aplicación arranca en `http://localhost:8080`.
 
 - SwaggerUI: http://localhost:8080/swagger-ui.html
 - Contrato OpenAPI: http://localhost:8080/openapi/prices-api.yaml
+- Salud: http://localhost:8080/actuator/health
 
 ## Uso
 
@@ -84,6 +85,7 @@ Solo los unitarios: `./mvnw test`.
 | Arquitectura | `ArchitectureTest` | Reglas de dependencias de la arquitectura hexagonal (ArchUnit) |
 | E2E | `PricesE2EIT` + [`prices.feature`](src/test/resources/e2e/prices.feature) | Los 5 casos del enunciado, más 404 y 400, contra la aplicación levantada |
 | E2E | `PricesE2EIT` + [`api-docs.feature`](src/test/resources/e2e/api-docs.feature) | Publicación del contrato y SwaggerUI |
+| E2E | `PricesE2EIT` + [`health.feature`](src/test/resources/e2e/health.feature) | `/actuator/health` responde `UP` |
 
 ### Tests e2e con Karate
 
@@ -111,6 +113,7 @@ El informe HTML queda en `target/karate-reports/karate-summary.html`.
 - Spring Boot 4.1.1
 - OpenAPI Generator 7.25.0
 - springdoc-openapi 3.1.1 (SwaggerUI)
+- Spring Boot Actuator (solo `health`)
 - H2 (en memoria), JDBC con `NamedParameterJdbcTemplate`
 - JUnit 5, AssertJ, Mockito, ArchUnit 1.5.0, Karate 1.5.2
 
@@ -234,5 +237,7 @@ Los mensajes de validación se fijan en inglés (`spring.web.locale: en`) para q
 ### Docker
 
 `Dockerfile` multi-stage: una etapa con Maven y JDK 17 compila y empaqueta, y la imagen final solo lleva el JRE 17 (Alpine) y el jar,
-y se ejecuta con un usuario sin privilegios. No hay `docker-compose`: es un único servicio y H2 va en memoria dentro del propio proceso,
+y se ejecuta con un usuario sin privilegios. Las imágenes base están fijadas por versión y digest, así que la build es reproducible.
+El `HEALTHCHECK` consulta `/actuator/health` (Spring Boot Actuator, con solo el endpoint `health` expuesto), que comprueba
+la aplicación y la base de datos. No hay `docker-compose`: es un único servicio y H2 va en memoria dentro del propio proceso,
 así que un compose no aportaría nada.

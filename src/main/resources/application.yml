@@ -8,3 +8,9 @@ spring:
 springdoc:
   swagger-ui:
     url: /openapi/prices-api.yaml
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
