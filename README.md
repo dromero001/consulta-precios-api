@@ -91,13 +91,16 @@ Solo los unitarios: `./mvnw test`.
 con `schema.sql`/`data.sql`. Después ejecuta el `.feature` de Karate, que hace peticiones HTTP reales al endpoint. Los 5 casos del enunciado
 son un `Scenario Outline` con una fila por caso:
 
-| Caso | Petición (producto 35455, cadena 1) | Tarifa | Precio |
-|---|---|---|---|
-| Test 1 | 2020-06-14 10:00 | 1 | 35.50 |
-| Test 2 | 2020-06-14 16:00 | 2 | 25.45 |
-| Test 3 | 2020-06-14 21:00 | 1 | 35.50 |
-| Test 4 | 2020-06-15 10:00 | 3 | 30.50 |
-| Test 5 | 2020-06-16 21:00 | 4 | 38.95 |
+| Caso del enunciado | Escenario (regla que ejercita) | Petición (producto 35455, cadena 1) | Tarifa | Precio |
+|---|---|---|---|---|
+| Test 1 | Only the base price list covers the date | 2020-06-14 10:00 | 1 | 35.50 |
+| Test 2 | A higher priority price list overrides the base one | 2020-06-14 16:00 | 2 | 25.45 |
+| Test 3 | The base price list applies again once the override ends | 2020-06-14 21:00 | 1 | 35.50 |
+| Test 4 | A same-day higher priority price list overrides the base one | 2020-06-15 10:00 | 3 | 30.50 |
+| Test 5 | A long-running higher priority price list overrides the base | 2020-06-16 21:00 | 4 | 38.95 |
+
+Los tests y las constantes se nombran por la regla que ejercitan, no por los datos del ejemplo. Los valores compartidos
+(`A_BRAND_ID`, `A_PRODUCT_ID`, `AN_APPLICATION_DATE`…) están centralizados en `PriceFixtures`.
 
 Karate usa la sintaxis Gherkin de Cucumber, pero trae los pasos HTTP y las aserciones JSON ya hechos, así que no hay que escribir step definitions.
 El informe HTML queda en `target/karate-reports/karate-summary.html`.

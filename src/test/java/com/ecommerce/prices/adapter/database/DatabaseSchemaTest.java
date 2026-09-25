@@ -1,5 +1,8 @@
 package com.ecommerce.prices.adapter.database;
 
+import static com.ecommerce.prices.domain.model.PriceFixtures.AN_UNKNOWN_BRAND_ID;
+import static com.ecommerce.prices.domain.model.PriceFixtures.A_BRAND_ID;
+import static com.ecommerce.prices.domain.model.PriceFixtures.A_PRODUCT_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -15,15 +18,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 @JdbcTest
 class DatabaseSchemaTest {
 
-    private static final long ZARA = 1L;
-    private static final long A_PRODUCT_ID = 35455L;
-    private static final long UNKNOWN_BRAND = 99L;
-
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
     @Test
-    void shouldLoadInditexBrandsWithZaraAsBrandOne() {
+    void shouldLoadTheInitialBrandsInIdentifierOrder() {
         List<String> brandNames = jdbcTemplate.queryForList("SELECT NAME FROM BRANDS ORDER BY ID", String.class);
 
         assertThat(brandNames).containsExactly(
@@ -31,7 +30,7 @@ class DatabaseSchemaTest {
     }
 
     @Test
-    void shouldLoadTheFourPriceListsOfTheStatement() {
+    void shouldLoadTheInitialPriceLists() {
         List<Long> priceLists = jdbcTemplate.queryForList("SELECT PRICE_LIST FROM PRICES ORDER BY PRICE_LIST", Long.class);
 
         assertThat(priceLists).containsExactly(1L, 2L, 3L, 4L);
@@ -39,39 +38,39 @@ class DatabaseSchemaTest {
 
     @Test
     void shouldRejectPriceOverlappingAnotherOfTheSameProductWithTheSamePriority() {
-        assertThatThrownBy(() -> insertPrice(ZARA, "2020-07-01T00:00:00", "2020-07-31T23:59:59", 0))
+        assertThatThrownBy(() -> insertPrice(A_BRAND_ID, "2020-07-01T00:00:00", "2020-07-31T23:59:59", 0))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
     void shouldAcceptPriceOverlappingAnotherOfTheSameProductWithADifferentPriority() {
-        insertPrice(ZARA, "2020-07-01T00:00:00", "2020-07-31T23:59:59", 2);
+        insertPrice(A_BRAND_ID, "2020-07-01T00:00:00", "2020-07-31T23:59:59", 2);
 
         assertThat(countPricesWithPriority(2)).isEqualTo(1);
     }
 
     @Test
     void shouldAcceptPriceWithTheSamePriorityWhenRangesDoNotOverlap() {
-        insertPrice(ZARA, "2021-01-01T00:00:00", "2021-01-31T23:59:59", 0);
+        insertPrice(A_BRAND_ID, "2021-01-01T00:00:00", "2021-01-31T23:59:59", 0);
 
         assertThat(countPricesWithPriority(0)).isEqualTo(2);
     }
 
     @Test
     void shouldRejectPriceSharingOnlyTheBoundarySecondWithAnotherOfTheSamePriority() {
-        assertThatThrownBy(() -> insertPrice(ZARA, "2020-12-31T23:59:59", "2021-01-31T23:59:59", 0))
+        assertThatThrownBy(() -> insertPrice(A_BRAND_ID, "2020-12-31T23:59:59", "2021-01-31T23:59:59", 0))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
     void shouldRejectPriceEndingBeforeItStarts() {
-        assertThatThrownBy(() -> insertPrice(ZARA, "2021-02-01T00:00:00", "2021-01-01T00:00:00", 5))
+        assertThatThrownBy(() -> insertPrice(A_BRAND_ID, "2021-02-01T00:00:00", "2021-01-01T00:00:00", 5))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
     void shouldRejectPriceOfAnUnknownBrand() {
-        assertThatThrownBy(() -> insertPrice(UNKNOWN_BRAND, "2021-01-01T00:00:00", "2021-01-31T23:59:59", 0))
+        assertThatThrownBy(() -> insertPrice(AN_UNKNOWN_BRAND_ID, "2021-01-01T00:00:00", "2021-01-31T23:59:59", 0))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 

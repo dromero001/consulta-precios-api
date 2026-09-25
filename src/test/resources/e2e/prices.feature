@@ -4,7 +4,7 @@ Feature: Applicable price of a brand product at a given date
     * url karate.properties['baseUrl']
     * path 'prices'
 
-  Scenario Outline: <case>: request at <applicationDate> for product 35455 of brand 1 (ZARA)
+  Scenario Outline: <rule> (request at <applicationDate>)
     Given params { applicationDate: '<applicationDate>', productId: 35455, brandId: 1 }
     When method get
     Then status 200
@@ -22,12 +22,12 @@ Feature: Applicable price of a brand product at a given date
       """
 
     Examples:
-      | case   | applicationDate     | priceList | startDate           | endDate             | price |
-      | Test 1 | 2020-06-14T10:00:00 | 1         | 2020-06-14T00:00:00 | 2020-12-31T23:59:59 | 35.50 |
-      | Test 2 | 2020-06-14T16:00:00 | 2         | 2020-06-14T15:00:00 | 2020-06-14T18:30:00 | 25.45 |
-      | Test 3 | 2020-06-14T21:00:00 | 1         | 2020-06-14T00:00:00 | 2020-12-31T23:59:59 | 35.50 |
-      | Test 4 | 2020-06-15T10:00:00 | 3         | 2020-06-15T00:00:00 | 2020-06-15T11:00:00 | 30.50 |
-      | Test 5 | 2020-06-16T21:00:00 | 4         | 2020-06-15T16:00:00 | 2020-12-31T23:59:59 | 38.95 |
+      | rule                                                         | applicationDate     | priceList | startDate           | endDate             | price |
+      | Only the base price list covers the date                     | 2020-06-14T10:00:00 | 1         | 2020-06-14T00:00:00 | 2020-12-31T23:59:59 | 35.50 |
+      | A higher priority price list overrides the base one          | 2020-06-14T16:00:00 | 2         | 2020-06-14T15:00:00 | 2020-06-14T18:30:00 | 25.45 |
+      | The base price list applies again once the override ends     | 2020-06-14T21:00:00 | 1         | 2020-06-14T00:00:00 | 2020-12-31T23:59:59 | 35.50 |
+      | A same-day higher priority price list overrides the base one | 2020-06-15T10:00:00 | 3         | 2020-06-15T00:00:00 | 2020-06-15T11:00:00 | 30.50 |
+      | A long-running higher priority price list overrides the base | 2020-06-16T21:00:00 | 4         | 2020-06-15T16:00:00 | 2020-12-31T23:59:59 | 38.95 |
 
   Scenario: No price applies before the first price list starts
     Given params { applicationDate: '2020-06-13T23:59:59', productId: 35455, brandId: 1 }

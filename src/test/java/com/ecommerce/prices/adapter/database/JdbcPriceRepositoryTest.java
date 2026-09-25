@@ -1,5 +1,9 @@
 package com.ecommerce.prices.adapter.database;
 
+import static com.ecommerce.prices.domain.model.PriceFixtures.ANOTHER_BRAND_ID;
+import static com.ecommerce.prices.domain.model.PriceFixtures.ANOTHER_PRODUCT_ID;
+import static com.ecommerce.prices.domain.model.PriceFixtures.A_BRAND_ID;
+import static com.ecommerce.prices.domain.model.PriceFixtures.A_PRODUCT_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.ecommerce.prices.domain.model.Price;
@@ -15,11 +19,6 @@ import org.springframework.context.annotation.Import;
 @JdbcTest
 @Import(JdbcPriceRepository.class)
 class JdbcPriceRepositoryTest {
-
-    private static final long ZARA = 1L;
-    private static final long PULL_AND_BEAR = 2L;
-    private static final long A_PRODUCT_ID = 35455L;
-    private static final long ANOTHER_PRODUCT_ID = 99999L;
 
     @Autowired
     private JdbcPriceRepository underTest;
@@ -47,7 +46,7 @@ class JdbcPriceRepositoryTest {
 
     @Test
     void shouldMapEveryColumnOfThePrice() {
-        Price expected = new Price(ZARA, A_PRODUCT_ID, 2L, LocalDateTime.parse("2020-06-14T15:00:00"), LocalDateTime.parse("2020-06-14T18:30:00"),
+        Price expected = new Price(A_BRAND_ID, A_PRODUCT_ID, 2L, LocalDateTime.parse("2020-06-14T15:00:00"), LocalDateTime.parse("2020-06-14T18:30:00"),
                 1, new BigDecimal("25.45"), Currency.getInstance("EUR"));
 
         assertThat(underTest.findApplicablePrices(queryAt("2020-06-14T16:00:00"))).contains(expected);
@@ -60,15 +59,15 @@ class JdbcPriceRepositoryTest {
 
     @Test
     void shouldFindNothingForAnotherProductOfTheBrand() {
-        assertThat(underTest.findApplicablePrices(new PriceQuery(ZARA, ANOTHER_PRODUCT_ID, LocalDateTime.parse("2020-06-14T16:00:00")))).isEmpty();
+        assertThat(underTest.findApplicablePrices(new PriceQuery(A_BRAND_ID, ANOTHER_PRODUCT_ID, LocalDateTime.parse("2020-06-14T16:00:00")))).isEmpty();
     }
 
     @Test
     void shouldFindNothingForTheSameProductOfAnotherBrand() {
-        assertThat(underTest.findApplicablePrices(new PriceQuery(PULL_AND_BEAR, A_PRODUCT_ID, LocalDateTime.parse("2020-06-14T16:00:00")))).isEmpty();
+        assertThat(underTest.findApplicablePrices(new PriceQuery(ANOTHER_BRAND_ID, A_PRODUCT_ID, LocalDateTime.parse("2020-06-14T16:00:00")))).isEmpty();
     }
 
     private static PriceQuery queryAt(String applicationDate) {
-        return new PriceQuery(ZARA, A_PRODUCT_ID, LocalDateTime.parse(applicationDate));
+        return new PriceQuery(A_BRAND_ID, A_PRODUCT_ID, LocalDateTime.parse(applicationDate));
     }
 }

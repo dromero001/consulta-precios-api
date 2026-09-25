@@ -1,7 +1,9 @@
 package com.ecommerce.prices.webapp.controller;
 
+import static com.ecommerce.prices.domain.model.PriceFixtures.AN_APPLICATION_DATE;
+import static com.ecommerce.prices.domain.model.PriceFixtures.AN_UNKNOWN_BRAND_ID;
+import static com.ecommerce.prices.domain.model.PriceFixtures.A_BRAND_ID;
 import static com.ecommerce.prices.domain.model.PriceFixtures.A_PRODUCT_ID;
-import static com.ecommerce.prices.domain.model.PriceFixtures.ZARA;
 import static com.ecommerce.prices.domain.model.PriceFixtures.aPrice;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -22,9 +24,6 @@ import org.springframework.test.web.servlet.assertj.MvcTestResult;
 @WebMvcTest(PriceController.class)
 class PriceControllerTest {
 
-    private static final long UNKNOWN_BRAND = 99L;
-    private static final LocalDateTime AN_APPLICATION_DATE = LocalDateTime.parse("2020-06-14T16:00:00");
-
     @Autowired
     private MockMvcTester mockMvc;
 
@@ -33,7 +32,7 @@ class PriceControllerTest {
 
     @Test
     void shouldReturnTheApplicablePriceOfTheBrandProductAtTheApplicationDate() {
-        PriceQuery query = new PriceQuery(ZARA, A_PRODUCT_ID, AN_APPLICATION_DATE);
+        PriceQuery query = new PriceQuery(A_BRAND_ID, A_PRODUCT_ID, AN_APPLICATION_DATE);
         when(getApplicablePriceUseCaseMock.execute(query)).thenReturn(
                 aPrice().priceList(2L).priority(1).amount("25.45").between("2020-06-14T15:00:00", "2020-06-14T18:30:00").build());
 
@@ -59,15 +58,15 @@ class PriceControllerTest {
 
     @Test
     void shouldAnswerNotFoundWhenTheBrandDoesNotExist() {
-        when(getApplicablePriceUseCaseMock.execute(new PriceQuery(UNKNOWN_BRAND, A_PRODUCT_ID, AN_APPLICATION_DATE)))
-                .thenThrow(new BrandNotFoundException(UNKNOWN_BRAND));
+        when(getApplicablePriceUseCaseMock.execute(new PriceQuery(AN_UNKNOWN_BRAND_ID, A_PRODUCT_ID, AN_APPLICATION_DATE)))
+                .thenThrow(new BrandNotFoundException(AN_UNKNOWN_BRAND_ID));
 
         assertProblem(getPrice("2020-06-14T16:00:00", "35455", "99"), 404, "Brand not found", "Brand 99 not found");
     }
 
     @Test
     void shouldAnswerNotFoundWhenNoPriceApplies() {
-        PriceQuery query = new PriceQuery(ZARA, A_PRODUCT_ID, AN_APPLICATION_DATE);
+        PriceQuery query = new PriceQuery(A_BRAND_ID, A_PRODUCT_ID, AN_APPLICATION_DATE);
         when(getApplicablePriceUseCaseMock.execute(query)).thenThrow(new PriceNotFoundException(query));
 
         assertProblem(getPrice("2020-06-14T16:00:00", "35455", "1"), 404, "Price not found",
@@ -108,7 +107,7 @@ class PriceControllerTest {
 
     @Test
     void shouldAnswerInternalServerErrorWithoutLeakingDetailsWhenSomethingUnexpectedFails() {
-        when(getApplicablePriceUseCaseMock.execute(new PriceQuery(ZARA, A_PRODUCT_ID, AN_APPLICATION_DATE)))
+        when(getApplicablePriceUseCaseMock.execute(new PriceQuery(A_BRAND_ID, A_PRODUCT_ID, AN_APPLICATION_DATE)))
                 .thenThrow(new IllegalStateException("connection pool exhausted"));
 
         assertProblem(getPrice("2020-06-14T16:00:00", "35455", "1"), 500, "Internal Server Error", "Unexpected error");

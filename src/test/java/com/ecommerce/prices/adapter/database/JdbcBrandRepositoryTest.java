@@ -1,5 +1,7 @@
 package com.ecommerce.prices.adapter.database;
 
+import static com.ecommerce.prices.domain.model.PriceFixtures.AN_UNKNOWN_BRAND_ID;
+import static com.ecommerce.prices.domain.model.PriceFixtures.A_BRAND_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
@@ -11,19 +13,16 @@ import org.springframework.context.annotation.Import;
 @Import(JdbcBrandRepository.class)
 class JdbcBrandRepositoryTest {
 
-    private static final long ZARA = 1L;
-    private static final long UNKNOWN_BRAND = 99L;
-
     @Autowired
     private JdbcBrandRepository underTest;
 
     @Test
     void shouldConfirmThatAnExistingBrandExists() {
-        assertThat(underTest.exists(ZARA)).isTrue();
+        assertThat(underTest.exists(A_BRAND_ID)).isTrue();
     }
 
     @Test
     void shouldDenyThatAnUnknownBrandExists() {
-        assertThat(underTest.exists(UNKNOWN_BRAND)).isFalse();
+        assertThat(underTest.exists(AN_UNKNOWN_BRAND_ID)).isFalse();
     }
 }

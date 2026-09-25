@@ -6,8 +6,11 @@ import java.util.Currency;
 
 public final class PriceFixtures {
 
-    public static final long ZARA = 1L;
+    public static final long A_BRAND_ID = 1L;
+    public static final long ANOTHER_BRAND_ID = 2L;
+    public static final long AN_UNKNOWN_BRAND_ID = 99L;
     public static final long A_PRODUCT_ID = 35455L;
+    public static final long ANOTHER_PRODUCT_ID = 99999L;
     public static final LocalDateTime AN_APPLICATION_DATE = LocalDateTime.parse("2020-06-14T16:00:00");
 
     private PriceFixtures() {
@@ -47,7 +50,7 @@ public final class PriceFixtures {
         }
 
         public Price build() {
-            return new Price(ZARA, A_PRODUCT_ID, priceList, startDate, endDate, priority, amount, Currency.getInstance("EUR"));
+            return new Price(A_BRAND_ID, A_PRODUCT_ID, priceList, startDate, endDate, priority, amount, Currency.getInstance("EUR"));
         }
     }
 }

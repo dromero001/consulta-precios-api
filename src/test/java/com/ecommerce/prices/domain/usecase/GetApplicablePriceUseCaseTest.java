@@ -1,8 +1,9 @@
 package com.ecommerce.prices.domain.usecase;
 
 import static com.ecommerce.prices.domain.model.PriceFixtures.AN_APPLICATION_DATE;
+import static com.ecommerce.prices.domain.model.PriceFixtures.AN_UNKNOWN_BRAND_ID;
+import static com.ecommerce.prices.domain.model.PriceFixtures.A_BRAND_ID;
 import static com.ecommerce.prices.domain.model.PriceFixtures.A_PRODUCT_ID;
-import static com.ecommerce.prices.domain.model.PriceFixtures.ZARA;
 import static com.ecommerce.prices.domain.model.PriceFixtures.aPrice;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -23,8 +24,7 @@ import org.junit.jupiter.api.Test;
 
 class GetApplicablePriceUseCaseTest {
 
-    private static final PriceQuery A_QUERY = new PriceQuery(ZARA, A_PRODUCT_ID, AN_APPLICATION_DATE);
-    private static final long UNKNOWN_BRAND = 99L;
+    private static final PriceQuery A_QUERY = new PriceQuery(A_BRAND_ID, A_PRODUCT_ID, AN_APPLICATION_DATE);
 
     private final BrandRepository brandRepositoryMock = mock(BrandRepository.class);
     private final PriceRepository priceRepositoryMock = mock(PriceRepository.class);
@@ -38,7 +38,7 @@ class GetApplicablePriceUseCaseTest {
         Price basePrice = aPrice().priceList(1L).priority(0).build();
         Price promotionalPrice = aPrice().priceList(2L).priority(1).build();
         List<Price> candidates = List.of(basePrice, promotionalPrice);
-        when(brandRepositoryMock.exists(ZARA)).thenReturn(true);
+        when(brandRepositoryMock.exists(A_BRAND_ID)).thenReturn(true);
         when(priceRepositoryMock.findApplicablePrices(A_QUERY)).thenReturn(candidates);
         when(priceSelectionStrategyMock.select(candidates)).thenReturn(Optional.of(promotionalPrice));
 
@@ -47,8 +47,8 @@ class GetApplicablePriceUseCaseTest {
 
     @Test
     void shouldFailWithBrandNotFoundWithoutLookingForPricesWhenTheBrandDoesNotExist() {
-        PriceQuery queryOfUnknownBrand = new PriceQuery(UNKNOWN_BRAND, A_PRODUCT_ID, AN_APPLICATION_DATE);
-        when(brandRepositoryMock.exists(UNKNOWN_BRAND)).thenReturn(false);
+        PriceQuery queryOfUnknownBrand = new PriceQuery(AN_UNKNOWN_BRAND_ID, A_PRODUCT_ID, AN_APPLICATION_DATE);
+        when(brandRepositoryMock.exists(AN_UNKNOWN_BRAND_ID)).thenReturn(false);
 
         assertThatThrownBy(() -> underTest.execute(queryOfUnknownBrand))
                 .isInstanceOf(BrandNotFoundException.class)
@@ -58,7 +58,7 @@ class GetApplicablePriceUseCaseTest {
 
     @Test
     void shouldFailWithPriceNotFoundWhenNoCandidateIsSelected() {
-        when(brandRepositoryMock.exists(ZARA)).thenReturn(true);
+        when(brandRepositoryMock.exists(A_BRAND_ID)).thenReturn(true);
         when(priceRepositoryMock.findApplicablePrices(A_QUERY)).thenReturn(List.of());
         when(priceSelectionStrategyMock.select(List.of())).thenReturn(Optional.empty());
 
