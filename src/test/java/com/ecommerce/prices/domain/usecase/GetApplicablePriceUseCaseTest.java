@@ -64,6 +64,6 @@ class GetApplicablePriceUseCaseTest {
 
         assertThatThrownBy(() -> underTest.execute(A_QUERY))
                 .isInstanceOf(PriceNotFoundException.class)
-                .hasMessage("No price applies to product 35455 of brand 1 at 2020-06-14T16:00");
+                .hasMessage("No price applies to product 35455 of brand 1 at 2020-06-14T16:00:00");
     }
 }

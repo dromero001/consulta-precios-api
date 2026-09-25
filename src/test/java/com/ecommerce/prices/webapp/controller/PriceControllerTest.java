@@ -70,7 +70,7 @@ class PriceControllerTest {
         when(getApplicablePriceUseCaseMock.execute(query)).thenThrow(new PriceNotFoundException(query));
 
         assertProblem(getPrice("2020-06-14T16:00:00", "35455", "1"), 404, "Price not found",
-                "No price applies to product 35455 of brand 1 at 2020-06-14T16:00");
+                "No price applies to product 35455 of brand 1 at 2020-06-14T16:00:00");
     }
 
     @Test

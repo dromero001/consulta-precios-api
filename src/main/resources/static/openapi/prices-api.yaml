@@ -121,7 +121,7 @@ components:
           example: 404
         detail:
           type: string
-          example: No price applies to product 35455 of brand 1 at 2020-06-13T10:00
+          example: No price applies to product 35455 of brand 1 at 2020-06-13T10:00:00
         instance:
           type: string
           format: uri

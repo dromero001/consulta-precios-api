@@ -201,7 +201,7 @@ Los errores se devuelven como `application/problem+json` con el formato `Problem
 | Situación | Estado | `detail` de ejemplo |
 |---|---|---|
 | La cadena no existe | 404 | `Brand 99 not found` |
-| Ninguna tarifa aplica en esa fecha | 404 | `No price applies to product 35455 of brand 1 at 2020-06-13T10:00` |
+| Ninguna tarifa aplica en esa fecha | 404 | `No price applies to product 35455 of brand 1 at 2020-06-13T10:00:00` |
 | Falta un parámetro | 400 | `Required parameter 'brandId' is not present.` |
 | Identificador no numérico | 400 | `Failed to convert 'productId' with value: 'abc'` |
 | Identificador menor que 1 | 400 | `brandId: must be greater than or equal to 1` |
