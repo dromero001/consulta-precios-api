@@ -236,7 +236,7 @@ Los mensajes de validación se fijan en inglés (`spring.web.locale: en`) para q
 
 ### Docker
 
-`Dockerfile` multi-stage: una etapa con Maven y JDK 17 compila y empaqueta, y la imagen final solo lleva el JRE 17 (Alpine) y el jar,
+`Dockerfile` multi-stage: una etapa con Maven y JDK 17 compila y ejecuta `mvn verify` (la imagen solo se genera si pasan todos los tests, e2e incluidos), y la imagen final solo lleva el JRE 17 (Alpine) y el jar,
 y se ejecuta con un usuario sin privilegios. Las imágenes base están fijadas por versión y digest, así que la build es reproducible.
 El `HEALTHCHECK` consulta `/actuator/health` (Spring Boot Actuator, con solo el endpoint `health` expuesto), que comprueba
 la aplicación y la base de datos. No hay `docker-compose`: es un único servicio y H2 va en memoria dentro del propio proceso,
