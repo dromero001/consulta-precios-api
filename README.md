@@ -60,7 +60,7 @@ curl "http://localhost:8080/prices?applicationDate=2020-06-14T16:00:00&productId
 }
 ```
 
-`applicationDate` es una fecha y hora local en formato ISO-8601 sin zona horaria (`yyyy-MM-ddTHH:mm:ss`).
+`applicationDate` es una fecha y hora local sin zona horaria, con segundos y sin fracciones (`yyyy-MM-ddTHH:mm:ss`).
 
 La respuesta incluye `currency` aunque el enunciado no la enumera entre los datos de salida: un precio sin moneda es ambiguo
 y la columna `CURR` forma parte de la tarifa. Añadir un campo a la respuesta no rompe a los clientes existentes.
@@ -131,8 +131,8 @@ com.ecommerce.prices
 ├── adapter
 │   └── database     JdbcPriceRepository, JdbcBrandRepository (NamedParameterJdbcTemplate)
 └── webapp
-    ├── controller     PriceController (implementa PricesApi generada), GlobalExceptionHandler
-    └── configuration  StrictLocalDateTimeFormatConfiguration
+    └── controller     PriceController (implementa PricesApi generada), GlobalExceptionHandler,
+                       InvalidApplicationDateException
 ```
 
 - Las dependencias apuntan siempre hacia el dominio. `ArchitectureTest` (ArchUnit) hace fallar la build si `domain` depende de `adapter` o `webapp`,
@@ -148,6 +148,12 @@ com.ecommerce.prices
 El contrato es la fuente de verdad: [`src/main/resources/static/openapi/prices-api.yaml`](src/main/resources/static/openapi/prices-api.yaml).
 En cada build, `openapi-generator-maven-plugin` genera a partir de él la interfaz `PricesApi` y el modelo `PriceResponse`
 (`interfaceOnly`). El controlador implementa esa interfaz, de modo que si el código se desvía del contrato, no compila.
+
+Las fechas (`applicationDate`, `startDate`, `endDate`) se declaran con el esquema `LocalDateTime` del contrato: `type: string` con
+`pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$'`. No se usa `format: date-time` porque en OpenAPI significa RFC 3339,
+que exige offset, y este servicio trabaja con fechas locales. Así el contrato dice exactamente lo que el servidor acepta y devuelve:
+el generador añade `@Pattern` al parámetro (400 automático si el formato no encaja) y el controlador convierte el texto a `LocalDateTime`
+con un parser estricto que también rechaza fechas imposibles, como `2020-02-30T10:00:00`.
 
 El esquema `Problem` del contrato se mapea a `org.springframework.http.ProblemDetail` (RFC 9457) en lugar de generar una clase propia.
 
@@ -205,12 +211,12 @@ Los errores se devuelven como `application/problem+json` con el formato `Problem
 | Falta un parámetro | 400 | `Required parameter 'brandId' is not present.` |
 | Identificador no numérico | 400 | `Failed to convert 'productId' with value: 'abc'` |
 | Identificador menor que 1 | 400 | `brandId: must be greater than or equal to 1` |
-| Fecha mal formada o con zona horaria | 400 | `Failed to convert 'applicationDate' with value: '2020-06-14T16:00:00+02:00'` |
+| Fecha sin segundos, con fracciones, con zona horaria o mal formada | 400 | `applicationDate: must match "^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$"` |
+| Fecha con el formato correcto pero inexistente | 400 | `applicationDate: '2020-02-30T10:00:00' is not a valid date` |
 | Cualquier otro error | 500 | `Unexpected error` (se registra en el log, sin exponer detalles al cliente) |
 
-Por defecto, el `@DateTimeFormat(iso = DATE_TIME)` que genera OpenAPI Generator acepta fechas con offset (`+02:00`) y lo descarta sin avisar,
-lo que devolvería el precio de otra hora. `StrictLocalDateTimeFormatConfiguration` registra un parser `ISO_LOCAL_DATE_TIME` estricto
-que las rechaza con un 400.
+Rechazar las fracciones de segundo evita que un instante como `2020-12-31T23:59:59.5` caiga entre dos tarifas consecutivas
+(`...23:59:59]` y `[00:00:00...`), y rechazar el offset evita devolver el precio de otra hora sin avisar.
 
 Los mensajes de validación se fijan en inglés (`spring.web.locale: en`) para que no dependan del idioma de la máquina.
 

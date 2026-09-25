@@ -35,6 +35,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return problem(HttpStatus.BAD_REQUEST, "Bad Request", describe(exception));
     }
 
+    @ExceptionHandler(InvalidApplicationDateException.class)
+    public ProblemDetail handleInvalidApplicationDate(InvalidApplicationDateException exception) {
+        return problem(HttpStatus.BAD_REQUEST, "Bad Request", exception.getMessage());
+    }
+
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleUnexpected(Exception exception) {
         LOGGER.error("Unexpected error", exception);

@@ -14,6 +14,8 @@ import com.ecommerce.prices.domain.model.PriceQuery;
 import com.ecommerce.prices.domain.usecase.GetApplicablePriceUseCase;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
@@ -93,16 +95,17 @@ class PriceControllerTest {
         assertProblem(getPrice("2020-06-14T16:00:00", "35455", "0"), 400, "Bad Request", "brandId: must be greater than or equal to 1");
     }
 
-    @Test
-    void shouldAnswerBadRequestWhenTheApplicationDateIsMalformed() {
-        assertProblem(getPrice("2020-06-14 16:00", "35455", "1"), 400, "Bad Request",
-                "Failed to convert 'applicationDate' with value: '2020-06-14 16:00'");
+    @ParameterizedTest
+    @ValueSource(strings = {"2020-06-14 16:00:00", "2020-06-14T16:00", "2020-06-14T16:00:00.5", "2020-06-14T16:00:00+02:00"})
+    void shouldAnswerBadRequestWhenTheApplicationDateIsNotALocalDateTimeWithSeconds(String applicationDate) {
+        assertProblem(getPrice(applicationDate, "35455", "1"), 400, "Bad Request",
+                "applicationDate: must match \"^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$\"");
     }
 
     @Test
-    void shouldAnswerBadRequestWhenTheApplicationDateHasATimeZoneOffset() {
-        assertProblem(getPrice("2020-06-14T16:00:00+02:00", "35455", "1"), 400, "Bad Request",
-                "Failed to convert 'applicationDate' with value: '2020-06-14T16:00:00+02:00'");
+    void shouldAnswerBadRequestWhenTheApplicationDateDoesNotExistInTheCalendar() {
+        assertProblem(getPrice("2020-02-30T10:00:00", "35455", "1"), 400, "Bad Request",
+                "applicationDate: '2020-02-30T10:00:00' is not a valid date");
     }
 
     @Test
@@ -128,6 +131,10 @@ class PriceControllerTest {
                 .bodyJson()
                 .isStrictlyEqualTo("""
                         {"title": "%s", "status": %d, "detail": "%s", "instance": "/prices"}
-                        """.formatted(title, status, detail));
+                        """.formatted(title, status, asJsonString(detail)));
+    }
+
+    private static String asJsonString(String text) {
+        return text.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 }

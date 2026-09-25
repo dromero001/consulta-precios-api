@@ -17,10 +17,8 @@ paths:
         - name: applicationDate
           in: query
           required: true
-          description: Local date and time, ISO-8601 without offset (yyyy-MM-ddTHH:mm:ss).
           schema:
-            type: string
-            format: date-time
+            $ref: "#/components/schemas/LocalDateTime"
           example: "2020-06-14T10:00:00"
         - name: productId
           in: query
@@ -65,6 +63,11 @@ paths:
                 $ref: "#/components/schemas/Problem"
 components:
   schemas:
+    LocalDateTime:
+      type: string
+      description: Local date and time without time zone, with seconds and without fractions (yyyy-MM-ddTHH:mm:ss).
+      pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$'
+      example: "2020-06-14T10:00:00"
     PriceResponse:
       type: object
       required:
@@ -89,13 +92,9 @@ components:
           format: int64
           example: 1
         startDate:
-          type: string
-          format: date-time
-          example: "2020-06-14T00:00:00"
+          $ref: "#/components/schemas/LocalDateTime"
         endDate:
-          type: string
-          format: date-time
-          example: "2020-12-31T23:59:59"
+          $ref: "#/components/schemas/LocalDateTime"
         price:
           type: number
           example: 35.50

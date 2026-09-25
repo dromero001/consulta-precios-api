@@ -113,12 +113,6 @@
                                 <schemaMapping>Problem=org.springframework.http.ProblemDetail</schemaMapping>
                             </schemaMappings>
                             <generateSupportingFiles>false</generateSupportingFiles>
-                            <typeMappings>
-                                <typeMapping>OffsetDateTime=LocalDateTime</typeMapping>
-                            </typeMappings>
-                            <importMappings>
-                                <importMapping>java.time.OffsetDateTime=java.time.LocalDateTime</importMapping>
-                            </importMappings>
                             <configOptions>
                                 <interfaceOnly>true</interfaceOnly>
                                 <skipDefaultInterface>true</skipDefaultInterface>
