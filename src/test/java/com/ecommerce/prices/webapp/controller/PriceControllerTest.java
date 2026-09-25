@@ -65,7 +65,7 @@ class PriceControllerTest {
         when(getApplicablePriceUseCaseMock.execute(new PriceQuery(AN_UNKNOWN_BRAND_ID, A_PRODUCT_ID, AN_APPLICATION_DATE)))
                 .thenThrow(new BrandNotFoundException(AN_UNKNOWN_BRAND_ID));
 
-        assertProblem(getPrice("2020-06-14T16:00:00", "35455", "99"), 404, "Brand not found", "Brand 99 not found");
+        assertProblem(getPrice("2020-06-14T16:00:00", "35455", "99"), 404, "Not Found", "Brand 99 not found");
     }
 
     @Test
@@ -73,7 +73,7 @@ class PriceControllerTest {
         PriceQuery query = new PriceQuery(A_BRAND_ID, A_PRODUCT_ID, AN_APPLICATION_DATE);
         when(getApplicablePriceUseCaseMock.execute(query)).thenThrow(new PriceNotFoundException(query));
 
-        assertProblem(getPrice("2020-06-14T16:00:00", "35455", "1"), 404, "Price not found",
+        assertProblem(getPrice("2020-06-14T16:00:00", "35455", "1"), 404, "Not Found",
                 "No price applies to product 35455 of brand 1 at 2020-06-14T16:00:00");
     }
 

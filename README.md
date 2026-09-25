@@ -125,7 +125,7 @@ com.ecommerce.prices
 ├── domain
 │   ├── model        Price, PriceQuery, BrandId, ProductId (Java puro)
 │   ├── port         PriceRepository, BrandRepository (puertos de salida)
-│   ├── exception    BrandNotFoundException, PriceNotFoundException, AmbiguousPriceException
+│   ├── exception    NotFoundException (Brand/Price), AmbiguousPriceException
 │   ├── strategy     PriceSelectionStrategy + HighestPriorityPriceSelectionStrategy
 │   └── usecase      GetApplicablePriceUseCase
 ├── adapter
@@ -206,8 +206,9 @@ habría que añadir a `PRICES` una columna con la zona horaria (o el país/merca
 ### Gestión de errores
 
 Los errores se devuelven como `application/problem+json` con el formato `ProblemDetail` (RFC 9457), desde un único
-`GlobalExceptionHandler` (`@RestControllerAdvice`). El dominio lanza sus propias excepciones (`BrandNotFoundException`,
-`PriceNotFoundException`), que no dependen de Spring. La traducción a HTTP se hace solo en la capa web.
+`GlobalExceptionHandler` (`@RestControllerAdvice`). El dominio lanza sus propias excepciones, que no dependen de Spring: `BrandNotFoundException` y `PriceNotFoundException`
+extienden `NotFoundException` y un único manejador las traduce a 404 (título estándar `Not Found`; el `detail` distingue el caso).
+La traducción a HTTP se hace solo en la capa web.
 
 | Situación | Estado | `detail` de ejemplo |
 |---|---|---|

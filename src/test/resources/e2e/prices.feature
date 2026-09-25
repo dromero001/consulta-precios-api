@@ -34,13 +34,13 @@ Feature: Applicable price of a brand product at a given date
     When method get
     Then status 404
     And match responseHeaders['Content-Type'][0] == 'application/problem+json'
-    And match response == { title: 'Price not found', status: 404, detail: 'No price applies to product 35455 of brand 1 at 2020-06-13T23:59:59', instance: '/prices' }
+    And match response == { title: 'Not Found', status: 404, detail: 'No price applies to product 35455 of brand 1 at 2020-06-13T23:59:59', instance: '/prices' }
 
   Scenario: The brand does not exist
     Given params { applicationDate: '2020-06-14T10:00:00', productId: 35455, brandId: 99 }
     When method get
     Then status 404
-    And match response == { title: 'Brand not found', status: 404, detail: 'Brand 99 not found', instance: '/prices' }
+    And match response == { title: 'Not Found', status: 404, detail: 'Brand 99 not found', instance: '/prices' }
 
   Scenario: A required parameter is missing
     Given params { applicationDate: '2020-06-14T10:00:00', productId: 35455 }

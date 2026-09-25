@@ -1,8 +1,7 @@
 package com.ecommerce.prices.webapp.controller;
 
 import com.ecommerce.prices.domain.exception.AmbiguousPriceException;
-import com.ecommerce.prices.domain.exception.BrandNotFoundException;
-import com.ecommerce.prices.domain.exception.PriceNotFoundException;
+import com.ecommerce.prices.domain.exception.NotFoundException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Path;
@@ -21,36 +20,33 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    @ExceptionHandler(BrandNotFoundException.class)
-    public ProblemDetail handleBrandNotFound(BrandNotFoundException exception) {
-        return problem(HttpStatus.NOT_FOUND, "Brand not found", exception.getMessage());
-    }
-
-    @ExceptionHandler(PriceNotFoundException.class)
-    public ProblemDetail handlePriceNotFound(PriceNotFoundException exception) {
-        return problem(HttpStatus.NOT_FOUND, "Price not found", exception.getMessage());
+    @ExceptionHandler(NotFoundException.class)
+    public ProblemDetail handleNotFound(NotFoundException exception) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, exception.getMessage());
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ProblemDetail handleConstraintViolation(ConstraintViolationException exception) {
-        return problem(HttpStatus.BAD_REQUEST, "Bad Request", describe(exception));
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, describe(exception));
     }
 
     @ExceptionHandler(InvalidApplicationDateException.class)
     public ProblemDetail handleInvalidApplicationDate(InvalidApplicationDateException exception) {
-        return problem(HttpStatus.BAD_REQUEST, "Bad Request", exception.getMessage());
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
     }
 
     @ExceptionHandler(AmbiguousPriceException.class)
     public ProblemDetail handleAmbiguousPrice(AmbiguousPriceException exception) {
         LOGGER.error("Ambiguous price configuration: {}", exception.getMessage());
-        return problem(HttpStatus.INTERNAL_SERVER_ERROR, "Ambiguous price", exception.getMessage());
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
+        problem.setTitle("Ambiguous price");
+        return problem;
     }
 
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleUnexpected(Exception exception) {
         LOGGER.error("Unexpected error", exception);
-        return problem(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", "Unexpected error");
+        return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error");
     }
 
     private static String describe(ConstraintViolationException exception) {
@@ -65,11 +61,5 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .reduce((first, second) -> second)
                 .map(Path.Node::getName)
                 .orElse("request");
-    }
-
-    private static ProblemDetail problem(HttpStatus status, String title, String detail) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(status, detail);
-        problem.setTitle(title);
-        return problem;
     }
 }
