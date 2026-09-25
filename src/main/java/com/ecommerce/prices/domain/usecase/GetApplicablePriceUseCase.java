@@ -2,6 +2,7 @@ package com.ecommerce.prices.domain.usecase;
 
 import com.ecommerce.prices.domain.exception.BrandNotFoundException;
 import com.ecommerce.prices.domain.exception.PriceNotFoundException;
+import com.ecommerce.prices.domain.model.BrandId;
 import com.ecommerce.prices.domain.model.Price;
 import com.ecommerce.prices.domain.model.PriceQuery;
 import com.ecommerce.prices.domain.port.BrandRepository;
@@ -28,7 +29,7 @@ public class GetApplicablePriceUseCase {
                 .orElseThrow(() -> new PriceNotFoundException(query));
     }
 
-    private void ensureBrandExists(long brandId) {
+    private void ensureBrandExists(BrandId brandId) {
         if (!brandRepository.exists(brandId)) {
             throw new BrandNotFoundException(brandId);
         }

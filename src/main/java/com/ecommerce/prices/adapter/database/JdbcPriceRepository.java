@@ -1,7 +1,9 @@
 package com.ecommerce.prices.adapter.database;
 
+import com.ecommerce.prices.domain.model.BrandId;
 import com.ecommerce.prices.domain.model.Price;
 import com.ecommerce.prices.domain.model.PriceQuery;
+import com.ecommerce.prices.domain.model.ProductId;
 import com.ecommerce.prices.domain.port.PriceRepository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -32,16 +34,16 @@ public class JdbcPriceRepository implements PriceRepository {
     @Override
     public List<Price> findApplicablePrices(PriceQuery query) {
         MapSqlParameterSource parameters = new MapSqlParameterSource()
-                .addValue("brandId", query.brandId())
-                .addValue("productId", query.productId())
+                .addValue("brandId", query.brandId().value())
+                .addValue("productId", query.productId().value())
                 .addValue("applicationDate", query.applicationDate());
         return jdbcTemplate.query(FIND_APPLICABLE_PRICES, parameters, (row, rowNumber) -> toPrice(row));
     }
 
     private static Price toPrice(ResultSet row) throws SQLException {
         return new Price(
-                row.getLong("BRAND_ID"),
-                row.getLong("PRODUCT_ID"),
+                new BrandId(row.getLong("BRAND_ID")),
+                new ProductId(row.getLong("PRODUCT_ID")),
                 row.getLong("PRICE_LIST"),
                 row.getObject("START_DATE", LocalDateTime.class),
                 row.getObject("END_DATE", LocalDateTime.class),

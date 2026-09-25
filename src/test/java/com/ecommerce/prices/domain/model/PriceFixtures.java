@@ -6,11 +6,11 @@ import java.util.Currency;
 
 public final class PriceFixtures {
 
-    public static final long A_BRAND_ID = 1L;
-    public static final long ANOTHER_BRAND_ID = 2L;
-    public static final long AN_UNKNOWN_BRAND_ID = 99L;
-    public static final long A_PRODUCT_ID = 35455L;
-    public static final long ANOTHER_PRODUCT_ID = 99999L;
+    public static final BrandId A_BRAND_ID = new BrandId(1L);
+    public static final BrandId ANOTHER_BRAND_ID = new BrandId(2L);
+    public static final BrandId AN_UNKNOWN_BRAND_ID = new BrandId(99L);
+    public static final ProductId A_PRODUCT_ID = new ProductId(35455L);
+    public static final ProductId ANOTHER_PRODUCT_ID = new ProductId(99999L);
     public static final LocalDateTime AN_APPLICATION_DATE = LocalDateTime.parse("2020-06-14T16:00:00");
 
     private PriceFixtures() {

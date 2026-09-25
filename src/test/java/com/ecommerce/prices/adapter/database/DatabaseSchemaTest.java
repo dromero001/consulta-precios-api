@@ -6,6 +6,7 @@ import static com.ecommerce.prices.domain.model.PriceFixtures.A_PRODUCT_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.ecommerce.prices.domain.model.BrandId;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -74,10 +75,10 @@ class DatabaseSchemaTest {
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 
-    private void insertPrice(long brandId, String startDate, String endDate, int priority) {
+    private void insertPrice(BrandId brandId, String startDate, String endDate, int priority) {
         jdbcTemplate.update(
                 "INSERT INTO PRICES (BRAND_ID, START_DATE, END_DATE, PRICE_LIST, PRODUCT_ID, PRIORITY, PRICE, CURR) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                brandId, LocalDateTime.parse(startDate), LocalDateTime.parse(endDate), 5L, A_PRODUCT_ID, priority, new BigDecimal("10.00"), "EUR");
+                brandId.value(), LocalDateTime.parse(startDate), LocalDateTime.parse(endDate), 5L, A_PRODUCT_ID.value(), priority, new BigDecimal("10.00"), "EUR");
     }
 
     private Integer countPricesWithPriority(int priority) {

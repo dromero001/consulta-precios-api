@@ -123,7 +123,7 @@ Un único módulo Maven con los paquetes separados por puertos y adaptadores:
 ```
 com.ecommerce.prices
 ├── domain
-│   ├── model        Price, PriceQuery (Java puro)
+│   ├── model        Price, PriceQuery, BrandId, ProductId (Java puro)
 │   ├── port         PriceRepository, BrandRepository (puertos de salida)
 │   ├── exception    BrandNotFoundException, PriceNotFoundException
 │   ├── strategy     PriceSelectionStrategy + HighestPriorityPriceSelectionStrategy
@@ -138,6 +138,7 @@ com.ecommerce.prices
 - Las dependencias apuntan siempre hacia el dominio. `ArchitectureTest` (ArchUnit) hace fallar la build si `domain` depende de `adapter` o `webapp`,
   si `domain.model`, `domain.port` o `domain.exception` dependen de Spring o Jakarta, o si los adaptadores dependen entre sí.
 - Se ha preferido un único módulo a un multimódulo Maven para mantener el código mínimo: ArchUnit da la misma garantía con menos ficheros.
+- `BrandId` y `ProductId` son value objects: el compilador impide intercambiar la cadena y el producto, que de otro modo serían dos `long`.
 - Persistencia con JDBC (`NamedParameterJdbcTemplate`) y SQL explícita, sin JPA: para una consulta de solo lectura, un ORM no aporta nada.
 - Las implementaciones de los puertos llevan como prefijo su tecnología (`JdbcPriceRepository`). Así, un adaptador nuevo (otra base de datos,
   una caché, un cliente REST) se añade sin tocar el dominio.
