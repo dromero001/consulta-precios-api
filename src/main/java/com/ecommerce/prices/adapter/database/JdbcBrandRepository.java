@@ -2,7 +2,7 @@ package com.ecommerce.prices.adapter.database;
 
 import com.ecommerce.prices.domain.model.BrandId;
 import com.ecommerce.prices.domain.port.BrandRepository;
-import java.util.Map;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -19,6 +19,7 @@ public class JdbcBrandRepository implements BrandRepository {
 
     @Override
     public boolean exists(BrandId brandId) {
-        return Boolean.TRUE.equals(jdbcTemplate.queryForObject(EXISTS_BRAND, Map.of("brandId", brandId.value()), Boolean.class));
+        MapSqlParameterSource parameters = new MapSqlParameterSource().addValue("brandId", brandId.value());
+        return Boolean.TRUE.equals(jdbcTemplate.queryForObject(EXISTS_BRAND, parameters, Boolean.class));
     }
 }
