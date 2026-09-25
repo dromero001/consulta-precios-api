@@ -8,11 +8,13 @@ import static com.ecommerce.prices.domain.model.PriceFixtures.aPrice;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
+import com.ecommerce.prices.domain.exception.AmbiguousPriceException;
 import com.ecommerce.prices.domain.exception.BrandNotFoundException;
 import com.ecommerce.prices.domain.exception.PriceNotFoundException;
+import com.ecommerce.prices.domain.model.Price;
 import com.ecommerce.prices.domain.model.PriceQuery;
 import com.ecommerce.prices.domain.usecase.GetApplicablePriceUseCase;
-import java.time.LocalDateTime;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -73,6 +75,16 @@ class PriceControllerTest {
 
         assertProblem(getPrice("2020-06-14T16:00:00", "35455", "1"), 404, "Price not found",
                 "No price applies to product 35455 of brand 1 at 2020-06-14T16:00:00");
+    }
+
+    @Test
+    void shouldAnswerInternalServerErrorWhenSeveralPricesShareTheHighestPriority() {
+        List<Price> tiedPrices = List.of(aPrice().priceList(2L).priority(1).build(), aPrice().priceList(3L).priority(1).build());
+        when(getApplicablePriceUseCaseMock.execute(new PriceQuery(A_BRAND_ID, A_PRODUCT_ID, AN_APPLICATION_DATE)))
+                .thenThrow(new AmbiguousPriceException(tiedPrices));
+
+        assertProblem(getPrice("2020-06-14T16:00:00", "35455", "1"), 500, "Ambiguous price",
+                "Price lists 2 and 3 of product 35455 of brand 1 share the highest priority 1");
     }
 
     @Test

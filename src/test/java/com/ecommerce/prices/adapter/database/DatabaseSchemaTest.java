@@ -64,6 +64,13 @@ class DatabaseSchemaTest {
     }
 
     @Test
+    void shouldLetAMultiRowUpdateCreateATieBecauseTheCheckOnlyComparesTheRowBeingWritten() {
+        jdbcTemplate.update("UPDATE PRICES SET PRIORITY = 7 WHERE PRICE_LIST IN (1, 2)");
+
+        assertThat(countPricesWithPriority(7)).isEqualTo(2);
+    }
+
+    @Test
     void shouldRejectPriceEndingBeforeItStarts() {
         assertThatThrownBy(() -> insertPrice(A_BRAND_ID, "2021-02-01T00:00:00", "2021-01-01T00:00:00", 5))
                 .isInstanceOf(DataIntegrityViolationException.class);

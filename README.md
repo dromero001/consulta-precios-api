@@ -125,7 +125,7 @@ com.ecommerce.prices
 ├── domain
 │   ├── model        Price, PriceQuery, BrandId, ProductId (Java puro)
 │   ├── port         PriceRepository, BrandRepository (puertos de salida)
-│   ├── exception    BrandNotFoundException, PriceNotFoundException
+│   ├── exception    BrandNotFoundException, PriceNotFoundException, AmbiguousPriceException
 │   ├── strategy     PriceSelectionStrategy + HighestPriorityPriceSelectionStrategy
 │   └── usecase      GetApplicablePriceUseCase
 ├── adapter
@@ -178,8 +178,9 @@ Limitaciones de la restricción de solape, a tener en cuenta fuera de este ejerc
 
 - No es portable: MySQL y PostgreSQL no admiten subconsultas en un `CHECK`. En PostgreSQL se resolvería con
   `EXCLUDE USING gist (... tsrange(START_DATE, END_DATE, '[]') WITH &&)` y en MySQL con un trigger o validando en la capa de escritura.
-- Solo se evalúa sobre la fila que se inserta o actualiza. Es suficiente para los datos cargados al arrancar, pero no garantiza el invariante
-  con escrituras concurrentes.
+- Solo compara la fila que se escribe con las versiones ya guardadas de las demás. Un `UPDATE` de varias filas
+  (`UPDATE PRICES SET PRIORITY = 7 WHERE PRICE_LIST IN (1, 2)`) o dos transacciones concurrentes pueden crear un empate;
+  `DatabaseSchemaTest` lo demuestra. Por eso la estrategia de selección rechaza también los empates.
 
 ### Selección de la tarifa: patrón Strategy
 
@@ -187,8 +188,12 @@ La regla "si varias tarifas cubren la fecha, se aplica la de mayor prioridad" vi
 el repositorio devuelve todas las tarifas candidatas y `PriceSelectionStrategy` elige cuál aplica.
 Hoy hay una única implementación, `HighestPriorityPriceSelectionStrategy`. La interfaz es el punto de extensión para
 otras reglas de selección (por ejemplo, desempatar por la fecha de inicio más reciente o aplicar promociones)
-sin tocar la infraestructura. Esa estrategia no contempla empates porque la base de datos los impide
-(ver `CK_PRICES_NO_OVERLAP_WITH_SAME_PRIORITY`).
+sin tocar la infraestructura.
+
+Los empates se controlan con dos barreras. La primera es la base de datos (`CK_PRICES_NO_OVERLAP_WITH_SAME_PRIORITY`).
+La segunda es la estrategia: si varias tarifas comparten la prioridad más alta, lanza `AmbiguousPriceException` y el servicio responde
+500 `Ambiguous price` indicando las tarifas empatadas, en lugar de devolver una de ellas al azar. La segunda barrera es necesaria
+porque la primera tiene huecos (ver las limitaciones de la restricción).
 
 ### Fechas y zona horaria
 
@@ -213,6 +218,7 @@ Los errores se devuelven como `application/problem+json` con el formato `Problem
 | Identificador menor que 1 | 400 | `brandId: must be greater than or equal to 1` |
 | Fecha sin segundos, con fracciones, con zona horaria o mal formada | 400 | `applicationDate: must match "^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$"` |
 | Fecha con el formato correcto pero inexistente | 400 | `applicationDate: '2020-02-30T10:00:00' is not a valid date` |
+| Varias tarifas comparten la prioridad más alta | 500 | `Price lists 2 and 3 of product 35455 of brand 1 share the highest priority 1` (título `Ambiguous price`) |
 | Cualquier otro error | 500 | `Unexpected error` (se registra en el log, sin exponer detalles al cliente) |
 
 Rechazar las fracciones de segundo evita que un instante como `2020-12-31T23:59:59.5` caiga entre dos tarifas consecutivas

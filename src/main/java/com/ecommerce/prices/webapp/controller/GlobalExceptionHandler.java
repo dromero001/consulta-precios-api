@@ -1,5 +1,6 @@
 package com.ecommerce.prices.webapp.controller;
 
+import com.ecommerce.prices.domain.exception.AmbiguousPriceException;
 import com.ecommerce.prices.domain.exception.BrandNotFoundException;
 import com.ecommerce.prices.domain.exception.PriceNotFoundException;
 import jakarta.validation.ConstraintViolation;
@@ -38,6 +39,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(InvalidApplicationDateException.class)
     public ProblemDetail handleInvalidApplicationDate(InvalidApplicationDateException exception) {
         return problem(HttpStatus.BAD_REQUEST, "Bad Request", exception.getMessage());
+    }
+
+    @ExceptionHandler(AmbiguousPriceException.class)
+    public ProblemDetail handleAmbiguousPrice(AmbiguousPriceException exception) {
+        LOGGER.error("Ambiguous price configuration: {}", exception.getMessage());
+        return problem(HttpStatus.INTERNAL_SERVER_ERROR, "Ambiguous price", exception.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
