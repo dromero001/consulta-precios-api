@@ -61,6 +61,21 @@ curl "http://localhost:8080/prices?applicationDate=2020-06-14T16:00:00&productId
 }
 ```
 
+Si ninguna tarifa aplica, la respuesta es un `404` con `Content-Type: application/problem+json`:
+
+```bash
+curl "http://localhost:8080/prices?applicationDate=2020-06-13T23:59:59&productId=35455&brandId=1"
+```
+
+```json
+{
+  "title": "Not Found",
+  "status": 404,
+  "detail": "No price applies to product 35455 of brand 1 at 2020-06-13T23:59:59",
+  "instance": "/prices"
+}
+```
+
 `applicationDate` es una fecha y hora local sin zona horaria, con segundos y sin fracciones (`yyyy-MM-ddTHH:mm:ss`).
 
 La respuesta incluye `currency` aunque el enunciado no la enumera entre los datos de salida: un precio sin moneda es ambiguo
